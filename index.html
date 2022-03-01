@@ -8,6 +8,21 @@
 </head>
 <body>
     <input type="file" id="file">
-    
+    <audio id="audio" controls preload="auto">
+        
+    </audio>
+    <script>
+        function onInputFileChange() {
+
+            var file = document.getElementById('file').files[0];
+
+            var url = URL.createObjectURL(file);
+
+            console.log(url);
+
+            document.getElementById("audio").src = url;
+
+}
+    </script>
 </body>
 </html>
