@@ -12,12 +12,7 @@ body, html {
     border-color: black;
 
 }
-canvas {
-    background-color: aliceblue;
-    height: 500px;
-    width: 500px;
-    
-}
+
 #canvas2 { 
     background-color: transparent;
     position: absolute;
@@ -27,6 +22,25 @@ canvas {
     height: 100%;
     z-index: -1;
 }
+#welcome {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background-color: black;
+    font-size: 3rem;
+}
+#welcome div {
+    background-color: brown;
+    padding: 20px;
+    border-radius: 3rem;
+    color: white;
+}
 input, audio {
     z-index: 2;
+}
+.hide {
+    display: none !important;
 }
