@@ -30,36 +30,71 @@ welcomeSplash.onclick = function(){
 let audioCtx = new AudioContext || new webkitAudioContext
 let analyser = audioCtx.createAnalyser();
 analyser.fftSize = 32;
+let mic = navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+// const myPromise = new Promise((resolver,) =>{
+
+// }
+let source2
+mic.then((e) => {
+  console.log(e)
+  source2 = audioCtx.createMediaStreamSource(e)
+  // source2.connect(analyser)
+  // source2.connect(audioCtx.destination)
+})
 let source = audioCtx.createMediaElementSource(audioElem)
 source.connect(analyser)
 source.connect(audioCtx.destination)
 let data = new Uint8Array(analyser.frequencyBinCount)
 
 // normalize audio input through function
-// link output to lightning variables
-// consider reducing parts of output into 4 main outputs as performance allows
-// create function to change lightning variables
-const lightningModifier = () => {
-
-}
-
-// Lightning variables //
-let segmentSpread = 5         // lower values causes more spread between each segment
-let lightningExtension = 20   // lightning length, higher values shortens lightning
-let roughness = 2.5;            // lower values makes lightning more rough
-let lightningThickness = 3
-let testVar = 1
-let finalSpread = 0
-
-// Original lightning canvas seffect by Bálint @ https://codepen.io/mcdorli/ //
-// Modifications by me to make lightning interact with audio //
-
 let width = window.innerWidth;
 let height = window.innerHeight
 const c = document.getElementById("lightning");
 c.width = width;
 c.height = height;
 var ctx = c.getContext("2d");
+// Lightning variables //
+let segmentSpread = 5         // lower values causes more spread between each segment
+let lightningExtension = 20   // lightning length, higher values shortens lightning
+let roughness = 2;            // lower values makes lightning more rough
+let lightningThickness = 1
+let testVar = 1
+let finalSpread = 0
+
+// link output to lightning variables
+// consider reducing parts of output into 4 main outputs as performance allows
+const inputReducer = (arr) =>{
+  let length = arr.length / 4
+  let result =[]
+  let sum = 0;
+  for(i = 0; i < length; i++){
+    for(j = 0; j<4; j++){
+      sum += arr[i*4+j]
+    }
+    result.push(sum/4);
+    sum = 0;
+  }
+  return result
+}
+// create function to change lightning variables
+const lightningModifier = () => {
+// link one variable to audio output
+analyser.getByteFrequencyData(data);
+let frequencyData = inputReducer(data)
+segmentSpread = (5 / (frequencyData[2] / 256)) || 5;
+lightningThickness = (10 * (1/((frequencyData[0]) / 256))) || 1;
+finalSpread = 1 *(frequencyData[1] / 256)
+roughness = 3 - (3 * (((frequencyData[3]) /128)%1))
+// lightningThickness = (data[])
+requestAnimationFrame(lightningModifier)
+}
+
+
+
+// Original lightning canvas seffect by Bálint @ https://codepen.io/mcdorli/ //
+// Modifications by me to make lightning interact with audio //
+
+
 
 var center = {x: width / 2, y: 20};
 var minSegmentHeight = 5;
@@ -76,8 +111,9 @@ ctx.shadowColor = color;
 ctx.fillStyle = color;
 ctx.fillRect(0, 0, width, height);
 ctx.fillStyle = "hsla(0, 0%, 10%, 0.2)";
-ctx. lineWidth = lightningThickness
+ctx.lineWidth = lightningThickness
 function render() {
+  ctx.lineWidth = lightningThickness
   ctx.shadowBlur = 0;
   ctx.globalCompositeOperation = "source-over";
   ctx.fillRect(0, 0, width, height);
@@ -93,6 +129,7 @@ function render() {
 }
 
 function createLightning() {
+  maxDifference = width / segmentSpread
   var segmentHeight = groundHeight - center.y;
   var lightning = [];
   lightning.push({x: center.x, y: center.y});
@@ -117,7 +154,7 @@ function createLightning() {
   return lightning;
 }
 
-render();
+lightningModifier();
 
 render();
 window.addEventListener('resize', function(e){
