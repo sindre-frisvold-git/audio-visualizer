@@ -14,14 +14,10 @@ function onInputFileChange() {
 }
 fileSelect.onchange = onInputFileChange
 // link audio element to analyser
-let audioCtx = new AudioContext || new webkitAudioContext
-let analyser = audioCtx.createAnalyser();
-analyser.fftSize = 32;
-let source = audioCtx.createMediaElementSource(audioElem)
-source.connect(analyser)
-source.connect(audioCtx.destination)
+
 
 // start audio context after userinteraction
+
 // create overlay that disappears after click
 const welcomeSplash = document.getElementById('welcome')
 welcomeSplash.onclick = function(){
@@ -31,25 +27,46 @@ welcomeSplash.onclick = function(){
 }
 // Audio context //
 
+let audioCtx = new AudioContext || new webkitAudioContext
+let analyser = audioCtx.createAnalyser();
+analyser.fftSize = 32;
+let source = audioCtx.createMediaElementSource(audioElem)
+source.connect(analyser)
+source.connect(audioCtx.destination)
+let data = new Uint8Array(analyser.frequencyBinCount)
 
+// normalize audio input through function
+// link output to lightning variables
+// consider reducing parts of output into 4 main outputs as performance allows
+// create function to change lightning variables
+const lightningModifier = () => {
 
-// Lightning canvas seffect by Bálint @ https://codepen.io/mcdorli/ //
+}
+
+// Lightning variables //
+let segmentSpread = 5         // lower values causes more spread between each segment
+let lightningExtension = 20   // lightning length, higher values shortens lightning
+let roughness = 2.5;            // lower values makes lightning more rough
+let lightningThickness = 3
+let testVar = 1
+let finalSpread = 0
+
+// Original lightning canvas seffect by Bálint @ https://codepen.io/mcdorli/ //
 // Modifications by me to make lightning interact with audio //
 
-var width = window.innerWidth;
-var height = window.innerHeight;
-var c = document.getElementById("lightning");
+let width = window.innerWidth;
+let height = window.innerHeight
+const c = document.getElementById("lightning");
 c.width = width;
 c.height = height;
 var ctx = c.getContext("2d");
 
 var center = {x: width / 2, y: 20};
 var minSegmentHeight = 5;
-var groundHeight = height - 20;
+var groundHeight = height - lightningExtension;
 var color = "hsl(180, 80%, 80%)";
-var roughness = 2;
-var maxDifference = width / 4
-ctx.lineWidth = 3;
+
+var maxDifference = width / segmentSpread;
 
 ctx.globalCompositeOperation = "lighter";
 
@@ -59,7 +76,7 @@ ctx.shadowColor = color;
 ctx.fillStyle = color;
 ctx.fillRect(0, 0, width, height);
 ctx.fillStyle = "hsla(0, 0%, 10%, 0.2)";
-
+ctx. lineWidth = lightningThickness
 function render() {
   ctx.shadowBlur = 0;
   ctx.globalCompositeOperation = "source-over";
@@ -79,15 +96,15 @@ function createLightning() {
   var segmentHeight = groundHeight - center.y;
   var lightning = [];
   lightning.push({x: center.x, y: center.y});
-  lightning.push({x: Math.random() * (width /10) +width/2, y: groundHeight + (Math.random() - 0.9) * 50});
+  lightning.push({x: center.x + ((Math.random() * (-width) + width / 2) * finalSpread), y: groundHeight});
   var currDiff = maxDifference;
   while (segmentHeight > minSegmentHeight) {
     var newSegments = [];
     for (var i = 0; i < lightning.length - 1; i++) {
       var start = lightning[i];
       var end = lightning[i + 1];
-      var midX = (start.x + end.x);
-      var newX = midX + (Math.random()) * currDiff;
+      var midX = (start.x + end.x) / 2;
+      var newX = midX + ((Math.random() * 2 - 1) * currDiff) * testVar;
       newSegments.push(start, {x: newX, y: (start.y + end.y) / 2});
     }
     
@@ -101,8 +118,12 @@ function createLightning() {
 }
 
 render();
+
+render();
 window.addEventListener('resize', function(e){
   console.log(e)
   width = window.innerWidth;
   height = window.innerHeight;
+  c.width = width;
+  c.height = height;
 })
