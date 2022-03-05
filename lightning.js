@@ -57,10 +57,21 @@ var ctx = c.getContext("2d");
 let segmentSpread = 5         // lower values causes more spread between each segment
 let lightningExtension = 20   // lightning length, higher values shortens lightning
 let roughness = 2;            // lower values makes lightning more rough
-let lightningThickness = 1
+let lightningThickness = 0.1
 let testVar = 1
 let finalSpread = 0
 
+// Audio constants
+
+
+const normaliser = (max, min, value, floorValue = 0) =>{
+  // create function that normalises a range to a value between 1 and 0
+  // ?add 3rd parameter for value to be parsed and return final value.
+  let ratio =((value - floorValue)/(256 - floorValue))
+  let output = (max - min) * ratio
+  if((output + min)<0) return min
+  return output + min
+}
 // link output to lightning variables
 // consider reducing parts of output into 4 main outputs as performance allows
 const inputReducer = (arr) =>{
@@ -81,10 +92,10 @@ const lightningModifier = () => {
 // link one variable to audio output
 analyser.getByteFrequencyData(data);
 let frequencyData = inputReducer(data)
-segmentSpread = (5 / (frequencyData[2] / 256)) || 5;
-lightningThickness = (10 * (1/((frequencyData[0]) / 256))) || 1;
-finalSpread = 1 *(frequencyData[1] / 256)
-roughness = 3 - (3 * (((frequencyData[3]) /128)%1))
+segmentSpread = normaliser(1, 20, frequencyData[1],);
+lightningThickness = ((normaliser(25, 1, (data[2] + data[1])/2, 200)) || 3);
+finalSpread = normaliser(1, 0, frequencyData[2])
+roughness = normaliser(1.5, 2, frequencyData[3])
 // lightningThickness = (data[])
 requestAnimationFrame(lightningModifier)
 }
