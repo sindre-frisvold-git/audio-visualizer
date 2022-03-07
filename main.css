@@ -44,3 +44,14 @@ input, audio {
 .hide {
     display: none !important;
 }
+.container {
+    display: flex;
+    position: absolute;
+    flex-direction: column;
+    background-color: rgb(255, 255, 255);
+    gap: 30px;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 20px;
+
+}
