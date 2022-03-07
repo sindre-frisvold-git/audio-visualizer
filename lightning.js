@@ -30,12 +30,13 @@ welcomeSplash.onclick = function(){
 let audioCtx = new AudioContext || new webkitAudioContext
 let analyser = audioCtx.createAnalyser();
 analyser.fftSize = 32;
-let mic = navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+
 // const myPromise = new Promise((resolver,) =>{
 
 // }
 
 // Mic test, worked but broke again, leaving in to fix later //
+// let mic = navigator.mediaDevices.getUserMedia({ audio: true, video: false })
 // let source2
 // mic.then((e) => {
 //   console.log(e)
