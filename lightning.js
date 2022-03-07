@@ -34,13 +34,17 @@ let mic = navigator.mediaDevices.getUserMedia({ audio: true, video: false })
 // const myPromise = new Promise((resolver,) =>{
 
 // }
-let source2
-mic.then((e) => {
-  console.log(e)
-  source2 = audioCtx.createMediaStreamSource(e)
-  // source2.connect(analyser)
-  // source2.connect(audioCtx.destination)
-})
+
+// Mic test, worked but broke again, leaving in to fix later //
+// let source2
+// mic.then((e) => {
+//   console.log(e)
+//   source2 = audioCtx.createMediaStreamSource(e)
+//   source2.connect(analyser)
+//   source2.connect(audioCtx.destination)
+// })
+// end of Mic experiment
+
 let source = audioCtx.createMediaElementSource(audioElem)
 source.connect(analyser)
 source.connect(audioCtx.destination)
