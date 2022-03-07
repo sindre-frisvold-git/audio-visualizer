@@ -65,6 +65,7 @@ let roughness = 2;            // lower values makes lightning more rough
 let lightningThickness = 0.1
 let testVar = 1
 let finalSpread = 0
+let color = "hsl(180, 80%, 80%)";
 
 // Audio constants
 // const averager = (arr, cacheSize = 10) => {
@@ -110,20 +111,16 @@ const inputReducer = (arr) =>{
 }
 // create function to change lightning variables
 // add array for staoring previosu values for averaging puroposes
-const cache = [
-  [],
-  [],
-  [],
-  []
-]
+let rainbow = 0
 const lightningModifier = () => {
 // link one variable to audio output
 analyser.getByteFrequencyData(data);
 let frequencyData = inputReducer(data)
-segmentSpread = normaliser(1, 20, frequencyData[1],);
-lightningThickness = ((normaliser(25, 1, frequencyData[0], 200)) || 3);
+segmentSpread = normaliser(1, 20, frequencyData[1]);
+lightningThickness = ((normaliser(20, 1, frequencyData[0], 200)) || 3);
 finalSpread = normaliser(1, 0, frequencyData[2])
 roughness = normaliser(1.5, 2, frequencyData[3])
+color = `hsl(${normaliser(360, 0, frequencyData[10])}, 80%, 80%)`
 // lightningThickness = (data[])
 requestAnimationFrame(lightningModifier)
 }
@@ -138,20 +135,21 @@ requestAnimationFrame(lightningModifier)
 var center = {x: width / 2, y: 20};
 var minSegmentHeight = 5;
 var groundHeight = height - lightningExtension;
-var color = "hsl(180, 80%, 80%)";
+
 
 var maxDifference = width / segmentSpread;
 
 ctx.globalCompositeOperation = "lighter";
 
-ctx.strokeStyle = color;
-ctx.shadowColor = color;
+
 
 ctx.fillStyle = color;
 ctx.fillRect(0, 0, width, height);
 ctx.fillStyle = "hsla(0, 0%, 10%, 0.2)";
 ctx.lineWidth = lightningThickness
 function render() {
+  ctx.strokeStyle = color;
+  ctx.shadowColor = color;
   ctx.lineWidth = lightningThickness
   ctx.shadowBlur = 0;
   ctx.globalCompositeOperation = "source-over";
