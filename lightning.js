@@ -81,6 +81,17 @@ const normaliser = (max, min, value, floorValue = 0) =>{
   if((output + min)<0) return min
   return output + min
 }
+const exponentialNormaliser = (max, min, value) =>{
+  return ((min)*(max/min))**(value/256);
+}
+const experimentalExponent = (max, min, value) =>{
+  let range = max - min
+  let ratio = value/256
+  if(range === (-1))return min -(10**ratio)/10
+  if(range === 1)return (10**ratio)/10 + min
+  if(range > (-1))return min -(-range)**ratio
+  return range**ratio+min
+}
 // link output to lightning variables
 // consider reducing parts of output into 4 main outputs as performance allows
 const inputReducer = (arr) =>{
@@ -103,11 +114,11 @@ const lightningModifier = () => {
 // link one variable to audio output
 analyser.getByteFrequencyData(data);
 let frequencyData = inputReducer(data)
-segmentSpread = normaliser(1, 15, frequencyData[5]);
-lightningThickness = ((normaliser(20, 1, frequencyData[0], 150)) || 3);
-finalSpread = normaliser(1, 0, frequencyData[10])
-roughness = normaliser(1.5, 2, frequencyData[14])
-color = `hsl(${normaliser(360, 0, frequencyData[0])}, 80%, 80%)`
+segmentSpread = normaliser(1, 15, frequencyData[4]);
+lightningThickness = exponentialNormaliser(30, 1, frequencyData[10]);
+finalSpread = exponentialNormaliser(50, 1, frequencyData[0])/100
+roughness = experimentalExponent(1.5, 2.5, frequencyData[6])
+color = `hsl(${exponentialNormaliser(360, 0, frequencyData[6])}, 80%, 80%)`
 // lightningExtension = Math.random() * normaliser(height/2, 0, frequencyData[5])
 requestAnimationFrame(lightningModifier)
 }
@@ -157,8 +168,10 @@ function createLightning() {
   maxDifference = width / segmentSpread
   var segmentHeight = groundHeight - center.y;
   var lightning = [];
-  lightning.push({x: center.x, y: center.y});
+  lightning.push({x: center.x + ((Math.random() * (-width) + width / 2) * finalSpread), y: center.y});
   lightning.push({x: center.x + ((Math.random() * (-width) + width / 2) * finalSpread), y: groundHeight});
+  // lightning.push({x: center.x, y: center.y});
+  // lightning.push({x: center.x + ((Math.random() * (-width) + width / 2) * finalSpread), y: groundHeight});
   var currDiff = maxDifference;
   while (segmentHeight > minSegmentHeight) {
     var newSegments = [];
