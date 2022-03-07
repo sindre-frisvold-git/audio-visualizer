@@ -29,7 +29,7 @@ welcomeSplash.onclick = function(){
 
 let audioCtx = new AudioContext || new webkitAudioContext
 let analyser = audioCtx.createAnalyser();
-analyser.fftSize = 32;
+analyser.fftSize = 128;
 
 // const myPromise = new Promise((resolver,) =>{
 
@@ -67,7 +67,23 @@ let testVar = 1
 let finalSpread = 0
 
 // Audio constants
+// const averager = (arr, cacheSize = 10) => {
+//   // clreate indexer function to create array for average
+//   // take an array of values and return the average
 
+// }
+// const indexer = (arr, data) =>{
+//   if(!data)return
+//   console.log('hi')
+//   if(arr[0].length > 60){
+//     for(i = 0;i<arr.length;i++){
+//       arr.shift()
+//     }
+//   }
+//   for(i = 0;i<arr.length;i++){
+//     arr[i].push(data[i])
+//   }
+// }
 
 const normaliser = (max, min, value, floorValue = 0) =>{
   // create function that normalises a range to a value between 1 and 0
@@ -93,12 +109,19 @@ const inputReducer = (arr) =>{
   return result
 }
 // create function to change lightning variables
+// add array for staoring previosu values for averaging puroposes
+const cache = [
+  [],
+  [],
+  [],
+  []
+]
 const lightningModifier = () => {
 // link one variable to audio output
 analyser.getByteFrequencyData(data);
 let frequencyData = inputReducer(data)
 segmentSpread = normaliser(1, 20, frequencyData[1],);
-lightningThickness = ((normaliser(25, 1, (data[2] + data[1])/2, 200)) || 3);
+lightningThickness = ((normaliser(25, 1, frequencyData[0], 200)) || 3);
 finalSpread = normaliser(1, 0, frequencyData[2])
 roughness = normaliser(1.5, 2, frequencyData[3])
 // lightningThickness = (data[])
