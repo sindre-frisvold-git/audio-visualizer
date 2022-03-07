@@ -86,10 +86,10 @@ const exponentialNormaliser = (max, min, value) =>{
 }
 const experimentalExponent = (max, min, value) =>{
   let range = max - min
-  let ratio = value/256
+  let ratio = value/255
   if(range === (-1))return min -(10**ratio)/10
   if(range === 1)return (10**ratio)/10 + min
-  if(range < -1)return min -(-range)**ratio
+  if(range <= 0)return min -(-range)**ratio
   return range**ratio+min
 }
 // link output to lightning variables
@@ -107,11 +107,18 @@ const inputReducer = (arr) =>{
   }
   return result
 }
-// dom constants
+// dom selectors for sliders
 
 const thicknessRange = document.getElementById('thickness')
 const thicknessFrequency = document.getElementById('thicknessFrequency')
-let thickness = thicknessRange.valueAsNumber
+const spreadRange = document.getElementById('spread')
+const spreadFrequency = document.getElementById('spreadFrequency')
+const roughnessRange = document.getElementById('roughness')
+const roughnessFrequency = document.getElementById('roughnessFrequency')
+const colorRange = document.getElementById('color')
+const colorFrequency = document.getElementById('colorFrequency')
+const widthRange = document.getElementById('width')
+const widthFrequency = document.getElementById('widthFrequency')
 // thicknessRange.addEventListener('oninput', (e) =>{
 //   console.log(e)
 //   thickness = e.currentTarget.value
@@ -121,15 +128,15 @@ let thickness = thicknessRange.valueAsNumber
 // add array for staoring previosu values for averaging puroposes
 let rainbow = 0
 const lightningModifier = () => {
-  requestAnimationFrame(lightningModifier)
+  // requestAnimationFrame(lightningModifier)
 // link one variable to audio output
 analyser.getByteFrequencyData(data);
 let frequencyData = inputReducer(data)
-segmentSpread = experimentalExponent(1, 30, frequencyData[3]);
-lightningThickness = exponentialNormaliser(thicknessRange.valueAsNumber, 1, frequencyData[thicknessFrequency.value]);
+segmentSpread = experimentalExponent(1, spreadRange.valueAsNumber, frequencyData[spreadFrequency.value]);
+lightningThickness = experimentalExponent(thicknessRange.valueAsNumber, 1, frequencyData[thicknessFrequency.value]);
 finalSpread = 0
-roughness = experimentalExponent(1.5, 2.5, frequencyData[6])
-color = `hsl(${experimentalExponent(360, 180, frequencyData[1])}, 80%, 80%)`
+roughness = experimentalExponent(roughnessRange.valueAsNumber/10, 2.5, frequencyData[6])
+color = `hsl(${normaliser(colorRange.value, 0, frequencyData[colorFrequency.value])}, 80%, 80%)`
 // lightningExtension = Math.random() * normaliser(height/2, 0, frequencyData[5])
 
 }
@@ -157,6 +164,11 @@ ctx.fillRect(0, 0, width, height);
 ctx.fillStyle = "hsla(0, 0%, 10%, 0.2)";
 ctx.lineWidth = lightningThickness
 function render() {
+  requestAnimationFrame(render)
+  // const t0 = performance.now();
+
+
+  lightningModifier()
   groundHeight = height - lightningExtension
   ctx.strokeStyle = color;
   ctx.shadowColor = color;
@@ -172,7 +184,10 @@ function render() {
     ctx.lineTo(lightning[i].x, lightning[i].y);
   }
   ctx.stroke();
-  requestAnimationFrame(render);
+
+  // const t1 = performance.now();
+  // console.log(t1-t0);
+  ;
 }
 
 function createLightning() {
