@@ -59,32 +59,19 @@ c.width = width;
 c.height = height;
 var ctx = c.getContext("2d");
 // Lightning variables //
-let segmentSpread = 5         // lower values causes more spread between each segment
-let lightningExtension = 20   // lightning length, higher values shortens lightning
-let roughness = 2;            // lower values makes lightning more rough
-let lightningThickness = 0.1
-let testVar = 1
-let finalSpread = 0
-let color = "hsl(180, 80%, 80%)";
+let segmentSpread = 5             // lower values causes more spread between each segment
+let lightningExtension = 20       // lightning length, higher values shortens lightning
+let roughness = 2;                // lower values makes lightning more rough
+let lightningThickness = 0.1      // adjusts widtth of lightning bolt
+let testVar = 1                   // placeholder, ignore
+let finalSpread = 0               // lightning spread at the bottom ov canvas
+let color = "hsl(180, 80%, 80%)"; // color of lightning
 
 // Audio constants
 // const averager = (arr, cacheSize = 10) => {
 //   // clreate indexer function to create array for average
 //   // take an array of values and return the average
 
-// }
-// const indexer = (arr, data) =>{
-//   if(!data)return
-//   console.log('hi')
-//   if(arr[0].length > 60){
-//     for(i = 0;i<arr.length;i++){
-//       arr.shift()
-//     }
-//   }
-//   for(i = 0;i<arr.length;i++){
-//     arr[i].push(data[i])
-//   }
-// }
 
 const normaliser = (max, min, value, floorValue = 0) =>{
   // create function that normalises a range to a value between 1 and 0
@@ -116,12 +103,12 @@ const lightningModifier = () => {
 // link one variable to audio output
 analyser.getByteFrequencyData(data);
 let frequencyData = inputReducer(data)
-segmentSpread = normaliser(1, 20, frequencyData[1]);
-lightningThickness = ((normaliser(20, 1, frequencyData[0], 200)) || 3);
-finalSpread = normaliser(1, 0, frequencyData[2])
-roughness = normaliser(1.5, 2, frequencyData[3])
-color = `hsl(${normaliser(360, 0, frequencyData[10])}, 80%, 80%)`
-// lightningThickness = (data[])
+segmentSpread = normaliser(1, 15, frequencyData[5]);
+lightningThickness = ((normaliser(20, 1, frequencyData[0], 150)) || 3);
+finalSpread = normaliser(1, 0, frequencyData[10])
+roughness = normaliser(1.5, 2, frequencyData[14])
+color = `hsl(${normaliser(360, 0, frequencyData[0])}, 80%, 80%)`
+// lightningExtension = Math.random() * normaliser(height/2, 0, frequencyData[5])
 requestAnimationFrame(lightningModifier)
 }
 
@@ -148,6 +135,7 @@ ctx.fillRect(0, 0, width, height);
 ctx.fillStyle = "hsla(0, 0%, 10%, 0.2)";
 ctx.lineWidth = lightningThickness
 function render() {
+  groundHeight = height - lightningExtension
   ctx.strokeStyle = color;
   ctx.shadowColor = color;
   ctx.lineWidth = lightningThickness
