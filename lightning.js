@@ -1,6 +1,56 @@
-// create audio element
+// DOM selectors for sliders
+// The sliders can be modified in index.html to change the max and min values for each variable on the fly
+// Also allows for frequency band change for each variable.
+const thicknessRange = document.getElementById('thickness')
+const thicknessFrequency = document.getElementById('thicknessFrequency')
+const spreadRange = document.getElementById('spread')
+const spreadFrequency = document.getElementById('spreadFrequency')
+const roughnessRange = document.getElementById('roughness')
+const roughnessFrequency = document.getElementById('roughnessFrequency')
+const colorRange = document.getElementById('color')
+const colorFrequency = document.getElementById('colorFrequency')
+const widthRange = document.getElementById('width')
+const widthFrequency = document.getElementById('widthFrequency')
+
+
+const welcomeSplash = document.getElementById('welcome')
 const audioElem = document.getElementById('audio')
 const fileSelect = document.getElementById('file')
+
+
+
+
+
+// Audio context //
+
+let audioCtx = new AudioContext || new webkitAudioContext
+let analyser = audioCtx.createAnalyser();
+analyser.fftSize = 128;   // Size of frequency bands, data array will have fftsize/2 entries
+let source = audioCtx.createMediaElementSource(audioElem)
+source.connect(analyser)
+source.connect(audioCtx.destination)
+let data = new Uint8Array(analyser.frequencyBinCount)
+
+// Canvas //
+let width = window.innerWidth;
+let height = window.innerHeight
+const c = document.getElementById("lightning");
+c.width = width;
+c.height = height;
+var ctx = c.getContext("2d");
+
+
+// Lightning variables //
+let segmentSpread = 5             // lower values causes more spread between each segment
+let lightningExtension = 20       // lightning length, higher values shortens lightning
+let roughness = 2;                // lower values makes lightning more rough
+let lightningThickness = 1        // adjusts widtth of lightning bolt
+let testVar = 1                   // placeholder, ignore
+let finalSpread = 0               // lightning spread at the bottom ov canvas
+let color = "hsl(180, 80%, 80%)"; // color of lightning
+
+// Functions //
+
 // change audio src on file change
 function onInputFileChange() {
 
@@ -12,66 +62,6 @@ function onInputFileChange() {
 
   audioElem.src = url;
 }
-fileSelect.onchange = onInputFileChange
-// link audio element to analyser
-
-
-// start audio context after userinteraction
-
-// create overlay that disappears after click
-const welcomeSplash = document.getElementById('welcome')
-welcomeSplash.onclick = function(){
-  this.classList.add('hide')
-  console.log(this)
-  audioCtx.resume()
-}
-// Audio context //
-
-let audioCtx = new AudioContext || new webkitAudioContext
-let analyser = audioCtx.createAnalyser();
-analyser.fftSize = 128;
-
-// const myPromise = new Promise((resolver,) =>{
-
-// }
-
-// Mic test, worked but broke again, leaving in to fix later //
-// let mic = navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-// let source2
-// mic.then((e) => {
-//   console.log(e)
-//   source2 = audioCtx.createMediaStreamSource(e)
-//   source2.connect(analyser)
-//   source2.connect(audioCtx.destination)
-// })
-// end of Mic experiment
-
-let source = audioCtx.createMediaElementSource(audioElem)
-source.connect(analyser)
-source.connect(audioCtx.destination)
-let data = new Uint8Array(analyser.frequencyBinCount)
-
-// normalize audio input through function
-let width = window.innerWidth;
-let height = window.innerHeight
-const c = document.getElementById("lightning");
-c.width = width;
-c.height = height;
-var ctx = c.getContext("2d");
-// Lightning variables //
-let segmentSpread = 5             // lower values causes more spread between each segment
-let lightningExtension = 20       // lightning length, higher values shortens lightning
-let roughness = 2;                // lower values makes lightning more rough
-let lightningThickness = 1      // adjusts widtth of lightning bolt
-let testVar = 1                   // placeholder, ignore
-let finalSpread = 0               // lightning spread at the bottom ov canvas
-let color = "hsl(180, 80%, 80%)"; // color of lightning
-
-// Audio constants
-// const averager = (arr, cacheSize = 10) => {
-//   // clreate indexer function to create array for average
-//   // take an array of values and return the average
-
 
 // Creates a linear ratio from audio output
 const normaliser = (max, min, value, offset = 0) =>{
@@ -122,19 +112,6 @@ const inputReducer = (arr) =>{
   return result
 }
 
-// DOM selectors for sliders
-// The sliders can be modified in index.html to change the max and min values for each variable on the fly
-// Also allows for frequency band change for each variable.
-const thicknessRange = document.getElementById('thickness')
-const thicknessFrequency = document.getElementById('thicknessFrequency')
-const spreadRange = document.getElementById('spread')
-const spreadFrequency = document.getElementById('spreadFrequency')
-const roughnessRange = document.getElementById('roughness')
-const roughnessFrequency = document.getElementById('roughnessFrequency')
-const colorRange = document.getElementById('color')
-const colorFrequency = document.getElementById('colorFrequency')
-const widthRange = document.getElementById('width')
-const widthFrequency = document.getElementById('widthFrequency')
 
 // callback function for modifying variables based on frequency data
 // variables are described at initialisation
@@ -144,7 +121,7 @@ let frequencyData = inputReducer(data)
 segmentSpread = exponentialNormaliser(1, spreadRange.valueAsNumber, frequencyData[spreadFrequency.value]);
 lightningThickness = exponentialNormaliser(thicknessRange.valueAsNumber, 0.3, frequencyData[thicknessFrequency.value]);
 finalSpread = exponentialNormaliser(widthRange.valueAsNumber, 0, frequencyData[widthFrequency.value])
-roughness = exponentialNormaliser(roughnessRange.valueAsNumber, 2, frequencyData[6])
+roughness = exponentialNormaliser(roughnessRange.valueAsNumber, 2, frequencyData[roughnessFrequency.value])
 color = `hsl(${exponentialNormaliser(colorRange.value, 0, frequencyData[colorFrequency.value])}, 80%, 80%)`
 
 // varable to modify how far the lightning extends, I couldnt get this to look good but it is left here for your experimentation
@@ -152,6 +129,38 @@ color = `hsl(${exponentialNormaliser(colorRange.value, 0, frequencyData[colorFre
 
 }
 
+// Events //
+
+
+fileSelect.onchange = onInputFileChange
+
+welcomeSplash.onclick = function(){
+  this.classList.add('hide')
+  console.log(this)
+  audioCtx.resume()
+}
+
+
+window.addEventListener('resize', function(e){
+  console.log(e)
+  width = window.innerWidth;
+  height = window.innerHeight;
+  c.width = width;
+  c.height = height;
+
+  center = {x: width / 2, y: 20};
+  minSegmentHeight = 5;
+  groundHeight = height - lightningExtension;
+
+
+  maxDifference = width / segmentSpread;
+
+  // ctx.fillStyle = color;
+  ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = "hsla(0, 0%, 10%, 0.5)";
+  ctx.lineWidth = lightningThickness
+
+})
 
 // Original lightning canvas effect by Bálint @ https://codepen.io/mcdorli/ //
 // Modifications by me to make lightning interact with audio //
@@ -170,7 +179,7 @@ ctx.globalCompositeOperation = "lighter";
 
 ctx.fillStyle = color;
 ctx.fillRect(0, 0, width, height);
-ctx.fillStyle = "hsla(0, 0%, 10%, 0.2)";
+ctx.fillStyle = "hsla(0, 0%, 10%, 0.5)";
 ctx.lineWidth = lightningThickness
 function render() {
   requestAnimationFrame(render)
@@ -230,10 +239,17 @@ function createLightning() {
 lightningModifier();
 
 render();
-window.addEventListener('resize', function(e){
-  console.log(e)
-  width = window.innerWidth;
-  height = window.innerHeight;
-  c.width = width;
-  c.height = height;
-})
+
+
+
+// Mic test, worked but broke again, leaving in to fix later //
+// let mic = navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+// let source2
+// mic.then((e) => {
+//   console.log(e)
+//   source2 = audioCtx.createMediaStreamSource(e)
+//   source2.connect(analyser)
+//   source2.connect(audioCtx.destination)
+// })
+// end of Mic experiment
+
