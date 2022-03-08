@@ -64,7 +64,7 @@ input, audio {
     justify-content: space-between;
 }
 #controls {
-    margin-top: 50%;
+    margin-top: 30%;
 }
 
 /* toggle switch courtesy of W3 schools */

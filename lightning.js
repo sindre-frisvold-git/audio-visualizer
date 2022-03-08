@@ -126,7 +126,6 @@ const widthFrequency = document.getElementById('widthFrequency')
 
 // create function to change lightning variables
 // add array for staoring previosu values for averaging puroposes
-let rainbow = 0
 const lightningModifier = () => {
   // requestAnimationFrame(lightningModifier)
 // link one variable to audio output
@@ -135,7 +134,7 @@ let frequencyData = inputReducer(data)
 segmentSpread = experimentalExponent(1, spreadRange.valueAsNumber, frequencyData[spreadFrequency.value]);
 lightningThickness = experimentalExponent(thicknessRange.valueAsNumber, 1, frequencyData[thicknessFrequency.value]);
 finalSpread = 0
-roughness = experimentalExponent(roughnessRange.valueAsNumber/10, 2.5, frequencyData[6])
+roughness = experimentalExponent(2.5, roughnessRange.valueAsNumber/10, frequencyData[6])
 color = `hsl(${normaliser(colorRange.value, 0, frequencyData[colorFrequency.value])}, 80%, 80%)`
 // lightningExtension = Math.random() * normaliser(height/2, 0, frequencyData[5])
 
