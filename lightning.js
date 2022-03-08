@@ -73,17 +73,29 @@ let color = "hsl(180, 80%, 80%)"; // color of lightning
 //   // take an array of values and return the average
 
 
+// Creates a linear ratio from audio output
 const normaliser = (max, min, value, offset = 0) =>{
-  // create function that normalises a range to a value between 1 and 0
-  // ?add 3rd parameter for value to be parsed and return final value.
+
   let ratio =((value - offset)/(256 - offset))
   let output = (max - min) * ratio
   if((output + min)<0) return min
   return output + min
 }
+
+
+// creates an exponential ratio which has amplified contrast between amplitudes
 const exponentialNormaliser = (max, min, value) =>{
-  return ((min)*(max/min))**(value/256);
+  let divisor = 12
+  let exponent = 2
+  let maxValue = (256/divisor)**exponent
+  let modValue = (value/divisor)**exponent
+  let ratio = modValue/maxValue
+  return ((max-min)*ratio) + min
+  
 }
+
+
+// Creates an exponential ratio based of the normal output
 const experimentalExponent = (max, min, value) =>{
   let range = max - min
   let ratio = value/255
@@ -92,8 +104,10 @@ const experimentalExponent = (max, min, value) =>{
   if(range <= 0)return min -(-range)**ratio
   return range**ratio+min
 }
-// link output to lightning variables
-// consider reducing parts of output into 4 main outputs as performance allows
+
+
+// reduces the output channels by 4, this one can be modified to group more frequencies together. 
+// I just havent modified this one since creating the visualiser.
 const inputReducer = (arr) =>{
   let length = arr.length / 4
   let result =[]
@@ -107,8 +121,10 @@ const inputReducer = (arr) =>{
   }
   return result
 }
-// dom selectors for sliders
 
+// DOM selectors for sliders
+// The sliders can be modified in index.html to change the max and min values for each variable on the fly
+// Also allows for frequency band change for each variable.
 const thicknessRange = document.getElementById('thickness')
 const thicknessFrequency = document.getElementById('thicknessFrequency')
 const spreadRange = document.getElementById('spread')
@@ -119,32 +135,26 @@ const colorRange = document.getElementById('color')
 const colorFrequency = document.getElementById('colorFrequency')
 const widthRange = document.getElementById('width')
 const widthFrequency = document.getElementById('widthFrequency')
-// thicknessRange.addEventListener('oninput', (e) =>{
-//   console.log(e)
-//   thickness = e.currentTarget.value
-// })
 
-// create function to change lightning variables
-// add array for staoring previosu values for averaging puroposes
+// callback function for modifying variables based on frequency data
+// variables are described at initialisation
 const lightningModifier = () => {
-  // requestAnimationFrame(lightningModifier)
-// link one variable to audio output
 analyser.getByteFrequencyData(data);
 let frequencyData = inputReducer(data)
-segmentSpread = experimentalExponent(1, spreadRange.valueAsNumber, frequencyData[spreadFrequency.value]);
-lightningThickness = experimentalExponent(thicknessRange.valueAsNumber, 1, frequencyData[thicknessFrequency.value]);
-finalSpread = 0
-roughness = experimentalExponent(2.5, roughnessRange.valueAsNumber/10, frequencyData[6])
-color = `hsl(${normaliser(colorRange.value, 0, frequencyData[colorFrequency.value])}, 80%, 80%)`
+segmentSpread = exponentialNormaliser(1, spreadRange.valueAsNumber, frequencyData[spreadFrequency.value]);
+lightningThickness = exponentialNormaliser(thicknessRange.valueAsNumber, 0.3, frequencyData[thicknessFrequency.value]);
+finalSpread = exponentialNormaliser(widthRange.valueAsNumber, 0, frequencyData[widthFrequency.value])
+roughness = exponentialNormaliser(roughnessRange.valueAsNumber, 2, frequencyData[6])
+color = `hsl(${exponentialNormaliser(colorRange.value, 0, frequencyData[colorFrequency.value])}, 80%, 80%)`
+
+// varable to modify how far the lightning extends, I couldnt get this to look good but it is left here for your experimentation
 // lightningExtension = Math.random() * normaliser(height/2, 0, frequencyData[5])
 
 }
 
 
-
-// Original lightning canvas seffect by Bálint @ https://codepen.io/mcdorli/ //
+// Original lightning canvas effect by Bálint @ https://codepen.io/mcdorli/ //
 // Modifications by me to make lightning interact with audio //
-
 
 
 var center = {x: width / 2, y: 20};
