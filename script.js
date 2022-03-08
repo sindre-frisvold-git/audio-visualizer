@@ -10,7 +10,6 @@ let ctx2 = canvas2.getContext('2d')
 canvas2.height = window.innerHeight
 canvas2.width = window.innerWidth
 
-document.getElementById('file').addEventListener('click', () =>{
 const audioElem = document.getElementById('audio')
 const audioCtx = new window.AudioContext()
 const analyzer = audioCtx.createAnalyser()
@@ -26,7 +25,9 @@ canvas.height = 500;
 analyzer.fftSize = 64;
 let bufferLength = analyzer.frequencyBinCount
 let dataArray = new Uint8Array(bufferLength)
+let dataFloat = new Float32Array(analyzer.frequencyBinCount)
 analyzer.getByteFrequencyData(dataArray)
+analyzer.getFloatFrequencyData(dataFloat)
 source.connect(analyzer)
 analyzer.connect(audioCtx.destination)
 function onInputFileChange() {
@@ -46,20 +47,26 @@ function loopingFunction() {
   analyzer.getByteFrequencyData(dataArray)
   draw(dataArray)
 }
+function floatLoopingFunction() {
+  requestAnimationFrame(floatLoopingFunction)
+  analyzer.getFloatFrequencyData(dataFloat)
+  draw(dataFloat)
+}
 
-function draw() {
+function draw(arr) {
   ctx.clearRect(0,0,canvas.width,canvas.height)
-  let space = canvas.width / dataArray.length;
-  dataArray.forEach((value,i)=>{
+  let space = canvas.width / arr.length;
+  arr.forEach((value,i)=>{
+    amplitude = (value/5)**1.5
     ctx.beginPath();
     ctx.moveTo(space*i,canvas.height); //x,y
-    ctx.lineTo(space*i,canvas.height-value); //x,y
+    ctx.lineTo(space*i,canvas.height-amplitude); //x,y
     ctx.stroke();
 })
 }
 document.getElementById('file').addEventListener('change', e => onInputFileChange())
 loopingFunction()
-})
+
 let number = 1;
 let scale = 10;
 let posX = 200
